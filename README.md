@@ -12,13 +12,21 @@ account, no cost, no cloud lag.**
 
 ## Install (non-technical, double-click)
 
-1. Download this project (green **Code → Download ZIP**, or clone) and unzip it.
+1. **Download:** go to **https://github.com/Slasher1v/Manifest** → green
+   **Code** button → **Download ZIP** → unzip it.
+   (Or clone: `git clone https://github.com/Slasher1v/Manifest.git`)
 2. Double-click **`Install Manifest.command`**.
    - If macOS says *"unidentified developer"*, **right-click → Open** the first time.
    - It installs everything automatically (a few minutes, needs internet).
 3. Double-click **`Manifest.command`** to start it. Your browser opens to the app.
 
 That's it. See **`READ ME FIRST.txt`** for the friendly step-by-step.
+
+### Updating later
+
+If you cloned it: `git pull` then run **`Manifest.command`** again.
+If you downloaded the ZIP: download it again and replace the folder. (The app
+also auto-updates yt-dlp on each launch, so it keeps working as sites change.)
 
 ## What gets installed
 
