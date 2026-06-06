@@ -1,0 +1,13 @@
+# Built / fetched at install time (never commit these)
+app/venv/
+app/pot-provider/
+app/downloads/
+
+# Python / macOS cruft
+__pycache__/
+*.pyc
+.DS_Store
+
+# Misc
+*.zip
+*.log
