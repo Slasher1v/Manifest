@@ -37,24 +37,22 @@ The backend (`app.py`) is already cross-platform (it locates `deno`/`ffmpeg` via
 
 Execute these workflows instantly when the user requests them by name.
 
-### 1. Publish Mac Release
-1. Merge the current branch into `main`.
-2. Run the Mac build steps (package `/MAC` into a distributable `Manifest.zip`).
-3. `git push` to `main` to trigger the GitHub Actions deployment.
-
-### 2. Publish Windows Release
-1. Merge the current branch into `main`.
-2. Run the Windows build steps (package `/WINDOWS` into a distributable `Manifest-Windows.zip`).
-3. `git push` to `main` to trigger the GitHub Actions deployment.
+### 1. Publish Mac Release  /  2. Publish Windows Release
+Releases are automated. To publish (both platforms are packaged together):
+1. Merge the current feature branch into `main` and `git push` origin `main`.
+2. Bump the version by creating + pushing a tag, e.g. `git tag v1.1 && git push origin v1.1`.
+3. The **Package & Release** GitHub Action (`.github/workflows/release.yml`) then
+   packages `/MAC` → `Manifest-macOS.zip` and `/WINDOWS` → `Manifest-Windows.zip`
+   and attaches both to the GitHub Release for that tag.
+   (It can also be run manually from the Actions tab via *workflow_dispatch*.)
 
 ### 3. Design Changes
 1. Take the updated files from `/DESIGN` (`app.py`, `requirements.txt`, `templates/`).
 2. Copy/refine them into both `/MAC/app` and `/WINDOWS/app`.
 3. Ensure the UI looks and behaves consistently on both platforms.
 
-## Notes / not-yet-built
+## Notes
 
-* GitHub Actions deployment workflows and the per-platform "build steps" are
-  referenced above but **not yet implemented** — set them up before relying on
-  the Publish commands, or perform the package/push manually for now.
+* Auto-release runs on pushing a `v*` tag (see workflow above). It activates once
+  this branch is merged to `main`.
 * Repo: https://github.com/Slasher1v/Manifest (default branch `main`).
