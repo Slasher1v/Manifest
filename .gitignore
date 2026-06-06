@@ -1,12 +1,13 @@
-# Built / fetched at install time (never commit these)
-app/venv/
-app/pot-provider/
-app/downloads/
+# Built / fetched at install time (never commit these) — any platform folder
+**/venv/
+**/pot-provider/
+**/downloads/
 
-# Python / macOS cruft
+# Python / OS cruft
 __pycache__/
 *.pyc
 .DS_Store
+Thumbs.db
 
 # Misc
 *.zip

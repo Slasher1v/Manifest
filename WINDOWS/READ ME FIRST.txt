@@ -1,0 +1,40 @@
+==========================================================
+              M A N I F E S T  (Windows)
+       A video downloader that runs on your own PC
+==========================================================
+
+  ⚠️  DRAFT / UNTESTED: this Windows version was written on a
+      Mac and has NOT yet been tested on a real Windows PC.
+      It may need fixes. The macOS version is the proven one.
+
+----------------------------------------------------------
+WHAT YOU NEED
+----------------------------------------------------------
+- Windows 10 or 11 (with winget / "App Installer").
+- An internet connection and ~10 minutes for first setup.
+- Google Chrome, signed in to YouTube (for HD YouTube).
+
+----------------------------------------------------------
+STEP 1 - INSTALL (once)
+----------------------------------------------------------
+1. Double-click:   Install Manifest.bat
+   - If a blue "Windows protected your PC" box appears, click
+     "More info" -> "Run anyway".
+   - If asked to allow changes / install apps, click Yes.
+2. Wait until it says "Done! Manifest is installed."
+
+----------------------------------------------------------
+STEP 2 - USE IT (every time)
+----------------------------------------------------------
+1. Double-click:   Manifest.bat
+2. Your browser opens at:  http://127.0.0.1:8000
+3. Paste a link, click Fetch, pick a quality.
+4. TO STOP: close the black window.
+
+----------------------------------------------------------
+NOTES
+----------------------------------------------------------
+- Same engine as the Mac version (yt-dlp + ffmpeg + deno +
+  a self-contained Python provided by uv).
+- For personal use; respect each site's Terms of Service.
+==========================================================
