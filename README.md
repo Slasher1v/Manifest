@@ -1,98 +1,64 @@
-# Manifest
+<h1 align="center">⬇ Manifest</h1>
 
-A personal, self-hosted video downloader. Paste a link from YouTube, TikTok,
-Instagram, X, Reddit, Vimeo and ~1,800 other sites → pick a quality → it
-downloads to your computer. Runs entirely on your machine — **no website, no
-account, no cost, no cloud lag.**
-
-> For personal use. Respect each site's Terms of Service and copyright — only
-> download content you have the right to.
+<p align="center">
+A personal video downloader that runs entirely on <b>your own computer</b>.<br>
+Paste a link from YouTube, TikTok, Instagram, X, Reddit & ~1,800 more → pick a quality → download.<br>
+No website, no account, no cost.
+</p>
 
 ---
 
-## Repository layout
+## ⬇ Download & Install
 
-| Folder | What it is |
-|--------|-----------|
-| **`DESIGN/`** | Shared source of truth — the UI (`templates/index.html`) and the cross-platform backend (`app.py`, `requirements.txt`). |
-| **`MAC/`** | macOS wrapper: `Install Manifest.command`, `Manifest.command`, `app/setup.sh` (Homebrew + uv). ✅ released. |
-| **`WINDOWS/`** | Windows wrapper: `Install Manifest.bat`, `Manifest.bat`, `app/setup.ps1` (winget + uv). 🚧 draft, untested. |
-| `CLAUDE.md` | The "master brain": roles, workflow rules, and custom commands. |
+<table>
+<tr>
+<td align="center" width="50%">
 
-Shared code is edited in `DESIGN/` and synced into the platform folders (see the
-**Design Changes** workflow in `CLAUDE.md`).
+### 🍎 macOS
 
-## Install (non-technical, double-click)
+**[⬇ Download for Mac](https://github.com/Slasher1v/Manifest/releases/latest/download/Manifest-macOS.zip)**
 
-Download the repo (**Code → Download ZIP**, or `git clone`), then:
+1. Unzip it
+2. Right-click **Install Manifest.command** → **Open** (once)
+3. Then double-click **Manifest.command**
 
-- **macOS:** open the **`MAC`** folder → double-click **`Install Manifest.command`**
-  (right-click → Open the first time) → then **`Manifest.command`**.
-- **Windows:** open the **`WINDOWS`** folder → double-click **`Install Manifest.bat`**
-  → then **`Manifest.bat`**. *(Draft — not yet tested on real Windows.)*
+</td>
+<td align="center" width="50%">
 
-Each platform's **`READ ME FIRST.txt`** has the friendly step-by-step. The
-installer is self-contained and idempotent; the launcher self-repairs and
-auto-updates yt-dlp.
+### 🪟 Windows
 
-## What gets installed
+**[⬇ Download for Windows](https://github.com/Slasher1v/Manifest/releases/latest/download/Manifest-Windows.zip)**
 
-The installer is self-contained and idempotent. It sets up:
+1. Unzip it
+2. Double-click **Install Manifest.bat** (SmartScreen → *More info → Run anyway*)
+3. Then double-click **Manifest.bat**
 
-- **[uv](https://github.com/astral-sh/uv)** → a self-contained Python (avoids
-  relying on the Mac's system Python, which can be broken).
-- **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** → the download engine.
-- **[ffmpeg](https://ffmpeg.org/)** → merges HD video+audio, makes MP3s.
-- **[Deno](https://deno.com/)** → solves YouTube's "n-challenge" (nsig).
-- **[bgutil PO-token provider](https://github.com/Brainicism/bgutil-ytdlp-pot-provider)**
-  → mints the YouTube Proof-of-Origin token (fetched + built at install).
+</td>
+</tr>
+</table>
 
-It also reads your **Chrome** cookies at runtime so logged-in / HD YouTube works
-(make sure you're signed in to YouTube in Chrome).
+The installer sets everything up automatically (a few minutes, first time only).
+Then the app opens in your browser at **http://127.0.0.1:8000**. Each download
+includes a **READ ME FIRST** with the full walkthrough.
 
-## How it works
+> 🪟 **Windows + YouTube tip:** use **Firefox** (signed in to YouTube) or a
+> `cookies.txt` file — recent Chrome encrypts cookies so they can't be read.
+> Other sites work with no setup. (Details in the Windows READ ME.)
 
-```
-Browser page (index.html)  ──►  Flask app (app.py)  ──►  yt-dlp ──► ffmpeg
-   paste link, pick quality        /info  /download           (download + merge)
-                                    /progress  /file
-```
+> For personal use. Please respect each site's Terms of Service and copyright.
 
-For YouTube specifically, yt-dlp uses **Deno** to solve the nsig challenge, a
-local **bgutil** server (port 4416) for the PO token, and your **Chrome cookies**
-for the session. All local; nothing is uploaded.
+---
+
+## What's inside
+
+It bundles, automatically and per-user (no admin): a self-contained Python (via
+`uv`), **yt-dlp** (the engine), **ffmpeg** (merging), **Deno** (YouTube's nsig
+solver), and the **bgutil** PO-token helper. yt-dlp auto-updates on launch, and
+the app self-heals if anything goes missing.
 
 ## For developers
 
-Edit shared code in **`DESIGN/`**, then sync to the platform folders (the
-**Design Changes** workflow in `CLAUDE.md`). Make feature changes on a branch,
-not `main`.
-
-```bash
-# run the Mac build directly, after MAC/app/setup.sh has run once
-cd MAC/app && ./venv/bin/python app.py
-```
-
-- `DESIGN/app.py` — Flask backend + yt-dlp glue (cross-platform)
-- `DESIGN/templates/index.html` — single-page UI
-- `MAC/app/setup.sh` / `WINDOWS/app/setup.ps1` — per-platform environment setup
-- Env vars: `MANIFEST_BROWSER` (cookie source, default `chrome`),
-  `MANIFEST_DENO` (deno path), `MANIFEST_PROXY` (optional proxy)
-
-## Troubleshooting
-
-- **A missing-module or Python error?** Just run **Manifest.command** again — it
-  repairs the environment automatically.
-- **YouTube only gives low quality / nothing?** Make sure you're logged into
-  YouTube in Chrome, then retry.
-- **Slow download?** Usually your connection or a large HD file — try a lower
-  quality.
-
-## Credits
-
-Built on the excellent work of yt-dlp, ffmpeg, Deno, uv, and the bgutil
-PO-token provider. Manifest is just the glue + a friendly UI.
-
-## License
-
-MIT (see `LICENSE`). Third-party tools retain their own licenses.
+The two folders above are the shipped apps. Everything else lives in **`dev/`**:
+`dev/DESIGN` is the shared source of truth (backend + UI), `dev/sandbox` is the
+macOS test build. See **`CLAUDE.md`** for the full workflow, roles, and release
+process. MIT licensed (see `LICENSE`); third-party tools keep their own licenses.

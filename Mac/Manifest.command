@@ -12,7 +12,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 
 # --- auto-update Manifest itself ------------------------------------------------
 # If this is a git clone on the main branch, pull the latest released code.
-REPO_ROOT="$(cd "$HERE/../.." 2>/dev/null && pwd)"
+# (Mac/ sits at the repo root, so the repo is one level up.)
+REPO_ROOT="$(cd "$HERE/.." 2>/dev/null && pwd)"
 if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git" ] && \
    [ "$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ]; then
   echo "==> Updating Manifest (git)..."
