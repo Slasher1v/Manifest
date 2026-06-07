@@ -16,7 +16,8 @@ WHAT YOU NEED
 - About 10 minutes and ~500 MB of space for the first setup.
 - For YouTube specifically, you need ONE of these:
     * FIREFOX installed and signed in to YouTube  (RECOMMENDED).
-      Why: recent Chrome versions encrypt cookies in a way no
+      Why: recent Chromium-based browsers (Chrome, Brave,
+      Edge, Opera, Vivaldi…) encrypt cookies in a way no
       external tool can read (Chrome's "AppBound" feature), so
       Manifest can't borrow Chrome's YouTube login. Firefox
       stores cookies normally and works without trouble.
@@ -70,23 +71,30 @@ TROUBLESHOOTING
        (not Chrome - see below), then try again.
 
 - "Failed to decrypt with DPAPI" error on YouTube?
-    -> Chrome 127+ uses "AppBound" encryption that blocks all
-       external cookie readers - yt-dlp issues #10927 / #15401.
-       There is no Chrome-side workaround. Two fixes:
+    -> All Chromium-based browsers (Chrome, Brave, Edge, Opera,
+       Vivaldi…) on Windows since Chrome 127 use "AppBound"
+       encryption that blocks external cookie readers - yt-dlp
+       issues #10927 / #15401. The browser itself is fine; only
+       reading its cookies from outside is blocked. Two fixes:
          1. Install FIREFOX, sign in to YouTube in it, and
             re-launch Manifest. The launcher auto-detects
-            Firefox and uses it instead of Chrome.
-         2. Use a cookies file - see next section.
+            Firefox and prefers it. You can keep using Brave/
+            Chrome as your daily browser - Firefox just needs
+            to exist + be signed in to YouTube.
+         2. Use a cookies file - see next section. (No new
+            browser required.)
 
 
 ----------------------------------------------------------
-USING A COOKIES FILE (for Chrome-only users)
+USING A COOKIES FILE (works with Chrome / Brave / Edge / any)
 ----------------------------------------------------------
 If you don't want to install Firefox, you can export your
-Chrome YouTube cookies once to a file:
+current browser's YouTube cookies once to a file:
 
-1. Install the "Get cookies.txt LOCALLY" extension in Chrome
-   (or any "cookies.txt" exporter from the Chrome Web Store).
+1. Install the "Get cookies.txt LOCALLY" extension in your
+   browser. It's in the Chrome Web Store (works in Chrome,
+   Brave, Edge, Opera, Vivaldi - any Chromium browser) and
+   in the Firefox Add-ons store.
 2. Go to youtube.com (signed in), click the extension,
    click "Export" - save as e.g. C:\Users\you\cookies.txt
 3. Start Manifest from a PowerShell window:

@@ -14,23 +14,44 @@ Write-Host "======================================================"
 # Keep Manifest up to date: pull the latest code from main and apply it in place.
 Update-ManifestCode
 
-# Chrome 127+ uses AppBound cookie encryption on Windows, so yt-dlp can't read
-# Chrome cookies (yt-dlp #10927 / #15401). Firefox stores cookies in plain SQLite
-# and works fine. If the user hasn't pinned MANIFEST_BROWSER, and Firefox is
-# installed with a profile, prefer it over Chrome.
+# Pick a browser for yt-dlp to borrow cookies from. Order matters:
+#   1. Firefox  - plain SQLite, ALWAYS works on Windows.
+#   2. Brave / Edge / Chrome - all Chromium-based, all inherit Chrome 127+'s
+#      AppBound cookie encryption (yt-dlp #10927 / #15401). They *may* work
+#      depending on the user's specific Chromium version + rollout state, so
+#      we try them in user-popularity order if Firefox isn't installed.
+# The user can override with `$env:MANIFEST_BROWSER = '...'` or set
+# `$env:MANIFEST_COOKIES_FILE = 'C:\path\to\cookies.txt'` (exported via the
+# "Get cookies.txt LOCALLY" browser extension, no Firefox required).
 if (-not $env:MANIFEST_BROWSER -and -not $env:MANIFEST_COOKIES_FILE) {
-    $ffProfiles = Join-Path $env:APPDATA 'Mozilla\Firefox\Profiles'
-    if (Test-Path $ffProfiles) {
-        $hasCookies = Get-ChildItem -Path $ffProfiles -Filter 'cookies.sqlite' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($hasCookies) {
-            $env:MANIFEST_BROWSER = 'firefox'
-            Write-Host "==> Firefox detected - using its cookies (Chrome 127+ encrypts cookies on Windows)."
+    $candidates = @(
+        @{ Name = 'firefox';
+           Probe = (Join-Path $env:APPDATA 'Mozilla\Firefox\Profiles') }
+        @{ Name = 'brave';
+           Probe = (Join-Path $env:LOCALAPPDATA 'BraveSoftware\Brave-Browser\User Data\Default\Cookies') }
+        @{ Name = 'edge';
+           Probe = (Join-Path $env:LOCALAPPDATA 'Microsoft\Edge\User Data\Default\Network\Cookies') }
+        @{ Name = 'chrome';
+           Probe = (Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data\Default\Network\Cookies') }
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c.Probe) {
+            $env:MANIFEST_BROWSER = $c.Name
+            if ($c.Name -eq 'firefox') {
+                Write-Host "==> Firefox detected - using its cookies (works reliably on Windows)."
+            } else {
+                Write-Host "==> $($c.Name) detected - using its cookies."
+                Write-Host "    Heads-up: Chromium browsers on Windows often hit AppBound encryption."
+                Write-Host "    If YouTube fails, install Firefox + sign in there, or export your"
+                Write-Host "    cookies to a file and set MANIFEST_COOKIES_FILE - the in-app error"
+                Write-Host "    message will spell out both options."
+            }
+            break
         }
     }
     if (-not $env:MANIFEST_BROWSER) {
-        Write-Host "==> Note: Chrome cookies on Windows are blocked by AppBound encryption."
-        Write-Host "    For YouTube, install Firefox + sign in, OR set MANIFEST_COOKIES_FILE"
-        Write-Host "    to a cookies.txt exported from a browser extension."
+        Write-Host "==> No supported browser profile found. For YouTube, install Firefox + sign"
+        Write-Host "    in, or set MANIFEST_COOKIES_FILE to a cookies.txt you exported."
     }
 }
 
