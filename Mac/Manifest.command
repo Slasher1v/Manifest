@@ -20,7 +20,7 @@ if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git" ] && \
   git -C "$REPO_ROOT" pull --ff-only 2>/dev/null || true
 fi
 # For everyone (incl. ZIP downloads): check the latest GitHub release and notify.
-LOCAL_VER="$(cat "$HERE/app/VERSION" 2>/dev/null || echo 0)"
+LOCAL_VER="$(cat "$HERE/.engine/VERSION" 2>/dev/null || echo 0)"
 LATEST_VER="$(curl -fsSL --max-time 4 https://api.github.com/repos/Slasher1v/Manifest/releases/latest 2>/dev/null \
   | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/')"
 if [ -n "$LATEST_VER" ] && [ "$LATEST_VER" != "$LOCAL_VER" ]; then
@@ -28,7 +28,7 @@ if [ -n "$LATEST_VER" ] && [ "$LATEST_VER" != "$LOCAL_VER" ]; then
   echo "     Download: https://github.com/Slasher1v/Manifest/releases/latest"
 fi
 
-cd "$HERE/app" || { echo "Could not find the app folder."; read -r -p "Press Return to close." _; exit 1; }
+cd "$HERE/.engine" || { echo "Could not find the app files."; read -r -p "Press Return to close." _; exit 1; }
 
 # shellcheck disable=SC1091
 source ./setup.sh

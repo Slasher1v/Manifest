@@ -29,8 +29,12 @@ Operate as one of three specialist roles by which folder you touch:
 | Role | Folder | Owns |
 |------|--------|------|
 | 🎨 **Design** | `dev/DESIGN` | Shared UI/UX **and** cross-platform backend. **Source of truth.** |
-| 🍎 **Mac** | `Mac/` (+ `dev/sandbox`) | macOS wrapper: `Install Manifest.command`, `Manifest.command`, `app/setup.sh` (Homebrew + uv). |
-| 🪟 **Windows** | `Windows/` | Windows wrapper: `Install Manifest.bat`, `Manifest.bat`, `app/{setup,install,launch}.ps1` (winget + uv). |
+| 🍎 **Mac** | `Mac/` (+ `dev/sandbox`) | macOS wrapper: `Install Manifest.command`, `Manifest.command`, `.engine/setup.sh` (Homebrew + uv). |
+| 🪟 **Windows** | `Windows/` | Windows wrapper: `Install Manifest.bat`, `Manifest.bat`, `.engine/{setup,install,launch}.ps1` (winget + uv). |
+
+> **Hidden engine:** in the shipped `Mac/` and `Windows/` folders the app machinery
+> lives in a hidden **`.engine/`** folder so end users only see the click-files +
+> README. (The dev `dev/sandbox` keeps a normal visible `app/` for convenience.)
 
 ### Mac: release vs sandbox
 * **`Mac/`** = the official, user-facing app (port **8000**). Its launcher
@@ -65,7 +69,7 @@ Releases are automated (both platforms packaged together):
 
 ### 3. Design Changes
 1. Take updated files from `dev/DESIGN` (`app.py`, `requirements.txt`, `templates/`).
-2. Copy/refine into `dev/sandbox/app`, `Mac/app`, and `Windows/app`. (Test in sandbox first.)
+2. Copy/refine into `dev/sandbox/app`, `Mac/.engine`, and `Windows/.engine`. (Test in sandbox first.)
 3. Ensure the UI looks/behaves consistently on both platforms.
 
 ## Notes

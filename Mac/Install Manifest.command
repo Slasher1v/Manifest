@@ -13,7 +13,7 @@ echo "for your Mac password once (for Homebrew) — type it"
 echo "and press Return (the characters stay hidden)."
 echo
 
-cd "$(dirname "$0")/app" || { echo "Could not find the app folder."; read -r -p "Press Return to close." _; exit 1; }
+cd "$(dirname "$0")/.engine" || { echo "Could not find the app files."; read -r -p "Press Return to close." _; exit 1; }
 
 # shellcheck disable=SC1091
 source ./setup.sh
