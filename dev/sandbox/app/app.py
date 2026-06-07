@@ -93,6 +93,43 @@ def _human_size(num):
     return f"{num:.1f} PB"
 
 
+# yt-dlp colors its error messages with ANSI escape codes; those leak into the
+# browser UI as garbled "[]​[0;31m..." text when we surface them via JSON.
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
+
+
+def _clean(msg):
+    return _ANSI_RE.sub("", msg or "").strip()
+
+
+def _friendly_error(msg):
+    """Turn yt-dlp's raw error into something a normal user can act on."""
+    clean = _clean(msg)
+    if "DPAPI" in clean or "Failed to decrypt" in clean:
+        return (
+            "Couldn't read your browser cookies on Windows. Chromium-based "
+            "browsers (Chrome, Brave, Edge, Opera, Vivaldi…) since Chrome 127 "
+            "encrypt cookies in a way no external app can read — this is "
+            "yt-dlp issue #10927, and there's no workaround at that layer.\n"
+            "\n"
+            "Two fixes — pick whichever is easier:\n"
+            "  A) Install Firefox, sign in to YouTube there once, then "
+            "restart Manifest. The launcher auto-detects Firefox and you're "
+            "done.\n"
+            "  B) In your current browser, install the 'Get cookies.txt "
+            "LOCALLY' extension, go to youtube.com (signed in), export "
+            "cookies.txt, then start Manifest from PowerShell with:\n"
+            "       $env:MANIFEST_COOKIES_FILE = 'C:\\path\\to\\cookies.txt'\n"
+            "       .\\Manifest.bat"
+        )
+    return f"Couldn't read that link: {clean}"
+
+
+def _looks_like_cookie_failure(msg):
+    m = _clean(msg).lower()
+    return "dpapi" in m or "failed to decrypt" in m or "could not copy" in m
+
+
 def _base_ydl_opts():
     """Options shared by info-extraction and downloading."""
     opts = {
@@ -115,11 +152,28 @@ def _base_ydl_opts():
     return opts
 
 
+def _extract_with_fallback(url, opts):
+    """Try ydl.extract_info; if it fails because we can't read browser cookies,
+    retry once with cookies disabled so the user at least sees what's publicly
+    available. Returns (info, cookie_fallback_used: bool)."""
+    try:
+        with YoutubeDL(opts) as ydl:
+            return ydl.extract_info(url, download=False), False
+    except DownloadError as e:
+        if not _looks_like_cookie_failure(str(e)):
+            raise
+        if not ("cookiesfrombrowser" in opts or "cookiefile" in opts):
+            raise
+        # Strip cookies and retry once.
+        retry_opts = {k: v for k, v in opts.items() if k not in ("cookiesfrombrowser", "cookiefile")}
+        with YoutubeDL(retry_opts) as ydl:
+            return ydl.extract_info(url, download=False), True
+
+
 def extract_info(url):
     """Probe a URL and return a normalized dict of formats — no download."""
     opts = _base_ydl_opts()
-    with YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+    info, cookie_fallback = _extract_with_fallback(url, opts)
 
     # Some extractors return a playlist even with noplaylist; take first entry.
     if info.get("_type") == "playlist" and info.get("entries"):
@@ -180,7 +234,7 @@ def extract_info(url):
 
     formats.sort(key=sort_key)
 
-    return {
+    result = {
         "id": info.get("id"),
         "title": info.get("title"),
         "uploader": info.get("uploader") or info.get("channel"),
@@ -191,6 +245,16 @@ def extract_info(url):
         "extractor": info.get("extractor_key"),
         "formats": formats,
     }
+    if cookie_fallback:
+        result["warning"] = (
+            "Couldn't read your browser cookies (Chromium-based browsers on "
+            "Windows — Chrome, Brave, Edge, Opera, Vivaldi — encrypt cookies "
+            "since Chrome 127). Showing what's publicly available; HD on "
+            "YouTube and age-gated content may be missing.\n"
+            "For full access: install Firefox + sign in there, OR export a "
+            "cookies.txt from your browser and set MANIFEST_COOKIES_FILE."
+        )
+    return result
 
 
 def _progress_hook(job_id):
@@ -240,10 +304,22 @@ def _run_download(job_id, url, format_selector, audio_only):
         opts.pop("merge_output_format", None)
 
     try:
-        with YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            if info.get("_type") == "playlist" and info.get("entries"):
-                info = info["entries"][0]
+        try:
+            with YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+        except DownloadError as e:
+            # Same cookie fallback as /info: if the browser cookie store can't
+            # be read, retry once without cookies so non-cookied downloads work.
+            if _looks_like_cookie_failure(str(e)) and (
+                "cookiesfrombrowser" in opts or "cookiefile" in opts
+            ):
+                retry = {k: v for k, v in opts.items() if k not in ("cookiesfrombrowser", "cookiefile")}
+                with YoutubeDL(retry) as ydl:
+                    info = ydl.extract_info(url, download=True)
+            else:
+                raise
+        if info.get("_type") == "playlist" and info.get("entries"):
+            info = info["entries"][0]
 
         # Find the produced file (extension is decided by yt-dlp/ffmpeg).
         produced = sorted(
@@ -272,10 +348,10 @@ def _run_download(job_id, url, format_selector, audio_only):
             )
     except DownloadError as e:
         with JOBS_LOCK:
-            JOBS[job_id].update({"status": "error", "error": str(e)})
+            JOBS[job_id].update({"status": "error", "error": _friendly_error(str(e))})
     except Exception as e:  # noqa: BLE001 — surface anything to the UI
         with JOBS_LOCK:
-            JOBS[job_id].update({"status": "error", "error": str(e)})
+            JOBS[job_id].update({"status": "error", "error": _clean(str(e))})
 
 
 # --------------------------------------------------------------------------- #
@@ -295,9 +371,9 @@ def info():
         data = extract_info(url)
         return jsonify(data)
     except DownloadError as e:
-        return jsonify({"error": f"Couldn't read that link: {e}"}), 400
+        return jsonify({"error": _friendly_error(str(e))}), 400
     except Exception as e:  # noqa: BLE001
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": _clean(str(e))}), 500
 
 
 @app.route("/download", methods=["POST"])

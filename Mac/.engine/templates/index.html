@@ -80,6 +80,11 @@
     background: linear-gradient(90deg, var(--accent), #c08bff); transition: width .25s; }
   .status { color: var(--muted); font-size: 13px; margin-top: 10px; }
   .error { color: var(--red); font-size: 14px; margin-top: 14px; white-space: pre-wrap; }
+  .warning {
+    color: #f0b132; font-size: 13.5px; margin-top: 14px;
+    background: rgba(240, 177, 50, 0.08); border: 1px solid rgba(240, 177, 50, 0.25);
+    padding: 10px 14px; border-radius: 10px; white-space: pre-wrap;
+  }
   .done-btn { background: linear-gradient(180deg, #34c759, #2ea043); width: 100%; margin-top: 14px; }
   .spinner {
     width: 16px; height: 16px; border: 2px solid var(--border);
@@ -104,6 +109,7 @@
     <div class="hint">Tip: press Enter to fetch. Files are saved to the <code>downloads/</code> folder and offered as a browser download.</div>
 
     <div id="errorBox" class="error hidden"></div>
+    <div id="warningBox" class="warning hidden"></div>
 
     <div id="infoCard" class="card hidden">
       <div class="meta">
@@ -145,11 +151,19 @@ function showError(msg) {
   box.classList.remove("hidden");
 }
 function clearError() { $("errorBox").classList.add("hidden"); }
+function showWarning(msg) {
+  const box = $("warningBox");
+  if (!msg) { box.classList.add("hidden"); return; }
+  box.textContent = msg;
+  box.classList.remove("hidden");
+}
+function clearWarning() { $("warningBox").classList.add("hidden"); }
 
 async function fetchInfo() {
   const url = $("url").value.trim();
   if (!url) return;
   clearError();
+  clearWarning();
   $("infoCard").classList.add("hidden");
   $("dlCard").classList.add("hidden");
   $("fetchBtn").disabled = true;
@@ -163,6 +177,7 @@ async function fetchInfo() {
     const data = await res.json();
     if (!res.ok) { showError(data.error || "Failed to read link."); return; }
     currentUrl = data.webpage_url || url;
+    if (data.warning) showWarning(data.warning);
     renderInfo(data);
   } catch (e) {
     showError("Network error: " + e.message);
