@@ -17,6 +17,43 @@ cd "$MANIFEST_APP_DIR" || return 1
 # uv may also live in the user-local bin if installed via its own script.
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
+# --- self-update (ZIP installs) ------------------------------------------------
+# Pull the latest app code from the repo's `main` and apply it in place, keeping
+# the user's venv / token helper / downloads. This is how UI & code changes you
+# push reach every user automatically — no re-download. Cloners are updated by the
+# launcher's `git pull` instead; set MANIFEST_NO_UPDATE=1 to disable.
+MANIFEST_REPO="Slasher1v/Manifest"
+MANIFEST_PLATFORM="Mac"   # the repo's top-level folder that holds this build
+
+manifest_self_update() {
+  [ -n "$MANIFEST_NO_UPDATE" ] && return 0
+  local local_sha latest_sha
+  local_sha="$(cat .commit 2>/dev/null)"
+  latest_sha="$(curl -fsSL --max-time 5 "https://api.github.com/repos/$MANIFEST_REPO/commits/main" 2>/dev/null \
+    | grep -m1 '"sha"' | sed -E 's/.*"sha"[: ]+"([0-9a-f]+)".*/\1/')"
+  [ -z "$latest_sha" ] && return 0            # offline / rate-limited → keep current code
+  [ "$latest_sha" = "$local_sha" ] && return 0 # already up to date
+  echo "==> Updating Manifest to the latest version..."
+  local tmp; tmp="$(mktemp -d)" || return 0
+  if curl -fsSL --max-time 90 "https://github.com/$MANIFEST_REPO/archive/$latest_sha.tar.gz" -o "$tmp/m.tgz" 2>/dev/null \
+     && tar -xzf "$tmp/m.tgz" -C "$tmp" 2>/dev/null; then
+    local src="$tmp/Manifest-$latest_sha/$MANIFEST_PLATFORM/.engine"
+    if [ -d "$src" ] && [ -f "$src/app.py" ]; then
+      # Only code files — never venv / pot-provider / downloads / user data.
+      cp -f "$src/app.py" ./app.py 2>/dev/null
+      cp -f "$src/requirements.txt" ./requirements.txt 2>/dev/null
+      cp -f "$src/setup.sh" ./setup.sh 2>/dev/null
+      [ -f "$src/VERSION" ] && cp -f "$src/VERSION" ./VERSION 2>/dev/null
+      mkdir -p templates && cp -f "$src/templates/"* templates/ 2>/dev/null
+      echo "$latest_sha" > .commit
+      # pick up any new Python deps from the refreshed requirements
+      [ -x venv/bin/python ] && uv pip install --python venv/bin/python -r requirements.txt >/dev/null 2>&1 || true
+      echo "   ✓ updated."
+    fi
+  fi
+  rm -rf "$tmp"
+}
+
 # True if the venv is complete (libraries importable) and the token helper is built.
 manifest_is_ready() {
   [ -x venv/bin/python ] || return 1

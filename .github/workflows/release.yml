@@ -33,12 +33,14 @@ jobs:
         run: |
           rm -rf stage && mkdir -p stage/Manifest
           cp -R Mac/. stage/Manifest/
+          echo "$GITHUB_SHA" > "stage/Manifest/.engine/.commit"   # baseline for self-update
           (cd stage && zip -r -X ../Manifest-macOS.zip Manifest -x "*.DS_Store" "*__pycache__*")
 
       - name: Package Windows  (Windows/ -> Manifest-Windows.zip)
         run: |
           rm -rf stage && mkdir -p stage/Manifest
           cp -R Windows/. stage/Manifest/
+          echo "$GITHUB_SHA" > "stage/Manifest/.engine/.commit"   # baseline for self-update
           (cd stage && zip -r -X ../Manifest-Windows.zip Manifest -x "*.DS_Store" "*__pycache__*")
 
       - name: Create or update the Release with both assets

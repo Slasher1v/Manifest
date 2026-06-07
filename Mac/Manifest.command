@@ -10,28 +10,21 @@ echo "======================================================"
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
-# --- auto-update Manifest itself ------------------------------------------------
-# If this is a git clone on the main branch, pull the latest released code.
-# (Mac/ sits at the repo root, so the repo is one level up.)
+cd "$HERE/.engine" || { echo "Could not find the app files."; read -r -p "Press Return to close." _; exit 1; }
+
+# shellcheck disable=SC1091
+source ./setup.sh
+
+# --- keep Manifest up to date ---------------------------------------------------
+# Cloners (a git checkout on main): pull. Everyone else (ZIP): self-update in place.
 REPO_ROOT="$(cd "$HERE/.." 2>/dev/null && pwd)"
 if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git" ] && \
    [ "$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ]; then
   echo "==> Updating Manifest (git)..."
   git -C "$REPO_ROOT" pull --ff-only 2>/dev/null || true
+else
+  manifest_self_update
 fi
-# For everyone (incl. ZIP downloads): check the latest GitHub release and notify.
-LOCAL_VER="$(cat "$HERE/.engine/VERSION" 2>/dev/null || echo 0)"
-LATEST_VER="$(curl -fsSL --max-time 4 https://api.github.com/repos/Slasher1v/Manifest/releases/latest 2>/dev/null \
-  | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/')"
-if [ -n "$LATEST_VER" ] && [ "$LATEST_VER" != "$LOCAL_VER" ]; then
-  echo "  🔔 A new version ($LATEST_VER) is available!"
-  echo "     Download: https://github.com/Slasher1v/Manifest/releases/latest"
-fi
-
-cd "$HERE/.engine" || { echo "Could not find the app files."; read -r -p "Press Return to close." _; exit 1; }
-
-# shellcheck disable=SC1091
-source ./setup.sh
 
 # Self-heal: if anything is missing or a previous install half-finished, fix it.
 if ! manifest_is_ready; then
