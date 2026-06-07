@@ -1,0 +1,132 @@
+==========================================================
+                  M A N I F E S T
+       A video downloader that runs on your own PC
+==========================================================
+
+Paste a link from YouTube, TikTok, Instagram, X, Reddit and
+more -> pick a quality -> it downloads to your computer.
+No website, no account, no cost.
+
+
+----------------------------------------------------------
+WHAT YOU NEED
+----------------------------------------------------------
+- A PC running Windows 10 (1809+) or Windows 11.
+- An internet connection.
+- About 10 minutes and ~500 MB of space for the first setup.
+- For YouTube specifically, you need ONE of these:
+    * FIREFOX installed and signed in to YouTube  (RECOMMENDED).
+      Why: recent Chrome versions encrypt cookies in a way no
+      external tool can read (Chrome's "AppBound" feature), so
+      Manifest can't borrow Chrome's YouTube login. Firefox
+      stores cookies normally and works without trouble.
+    * OR a cookies.txt file you exported from any browser
+      using the "Get cookies.txt LOCALLY" browser extension.
+      See "USING A COOKIES FILE" below.
+  Non-YouTube sites (TikTok, Instagram, X, Reddit, etc.) work
+  without any cookies setup at all.
+
+No admin/UAC prompts: everything installs to your user folder.
+
+
+----------------------------------------------------------
+STEP 1 — INSTALL (do this once)
+----------------------------------------------------------
+1. Double-click:   Install Manifest.bat
+
+   >>> If Windows SmartScreen says "Windows protected your PC":
+       click "More info" -> "Run anyway".
+       (You only have to do this the first time.)
+
+2. A console window opens and installs everything.
+   - Wait until it says: "Done! Manifest is installed."
+
+3. Close that window.
+
+
+----------------------------------------------------------
+STEP 2 — USE IT (every time)
+----------------------------------------------------------
+1. Double-click:   Manifest.bat
+
+2. Your web browser opens automatically at:
+      http://127.0.0.1:8000
+
+3. Paste a video link, click "Fetch", pick a quality.
+   The file is saved and offered as a download.
+
+4. TO STOP: just close the console window.
+
+
+----------------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------------
+- "winget is not available"?
+    -> Open Microsoft Store, search for "App Installer",
+       install/update it, then re-run "Install Manifest.bat".
+
+- YouTube says nothing downloads / only low quality?
+    -> Make sure you're LOGGED IN to YouTube in FIREFOX
+       (not Chrome - see below), then try again.
+
+- "Failed to decrypt with DPAPI" error on YouTube?
+    -> Chrome 127+ uses "AppBound" encryption that blocks all
+       external cookie readers - yt-dlp issues #10927 / #15401.
+       There is no Chrome-side workaround. Two fixes:
+         1. Install FIREFOX, sign in to YouTube in it, and
+            re-launch Manifest. The launcher auto-detects
+            Firefox and uses it instead of Chrome.
+         2. Use a cookies file - see next section.
+
+
+----------------------------------------------------------
+USING A COOKIES FILE (for Chrome-only users)
+----------------------------------------------------------
+If you don't want to install Firefox, you can export your
+Chrome YouTube cookies once to a file:
+
+1. Install the "Get cookies.txt LOCALLY" extension in Chrome
+   (or any "cookies.txt" exporter from the Chrome Web Store).
+2. Go to youtube.com (signed in), click the extension,
+   click "Export" - save as e.g. C:\Users\you\cookies.txt
+3. Start Manifest from a PowerShell window:
+       $env:MANIFEST_COOKIES_FILE = "C:\Users\you\cookies.txt"
+       .\Manifest.bat
+   (Or set the variable permanently via System Properties ->
+   Environment Variables -> User variables -> New.)
+
+Re-export when the cookies stop working (every few weeks).
+
+- An error about a missing module (e.g. "No module named flask")?
+    -> Just double-click "Manifest.bat" again. It repairs the
+       setup automatically. If it still fails, run
+       "Install Manifest.bat" and watch for any red error text.
+
+- A download is slow?
+    -> Usually just your internet speed, or a big HD file.
+       Try a lower quality.
+
+- Want to move the folder?
+    -> You can put this whole "Manifest" folder anywhere
+       (e.g. Desktop or Documents). Keep all the files
+       together inside it.
+
+
+----------------------------------------------------------
+WHAT GETS INSTALLED (and where)
+----------------------------------------------------------
+All under your user profile - nothing system-wide:
+- uv + Python  -> %USERPROFILE%\.local
+- Node.js LTS  -> winget user-scope
+- Deno         -> winget user-scope
+- ffmpeg       -> winget user-scope
+- Python venv  -> .\app\venv
+- bgutil POT   -> .\app\pot-provider  (built at install)
+
+
+----------------------------------------------------------
+NOTE
+----------------------------------------------------------
+For personal use. Please respect each site's Terms of
+Service and copyright. Only download what you're allowed to.
+==========================================================

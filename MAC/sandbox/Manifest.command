@@ -5,8 +5,12 @@
 #
 clear
 echo "======================================================"
-echo "            Starting  M A N I F E S T"
+echo "        Starting  M A N I F E S T   🧪 SANDBOX"
+echo "      (internal test build — not the released app)"
 echo "======================================================"
+
+# Sandbox runs on its own port so it can run alongside the release build.
+export MANIFEST_PORT=8001
 
 cd "$(dirname "$0")/app" || { echo "Could not find the app folder."; read -r -p "Press Return to close." _; exit 1; }
 
@@ -39,10 +43,10 @@ if ! curl -s -o /dev/null --max-time 2 http://127.0.0.1:4416/ping; then
 fi
 
 # Open the app in the browser shortly after the server boots.
-( sleep 2; open http://127.0.0.1:8000 ) &
+( sleep 2; open "http://127.0.0.1:${MANIFEST_PORT}" ) &
 
 echo
-echo "  Manifest is running at:  http://127.0.0.1:8000"
+echo "  Manifest SANDBOX is running at:  http://127.0.0.1:${MANIFEST_PORT}"
 echo "  (your browser should open automatically)"
 echo
 echo "  >> To STOP Manifest, just close this window. <<"

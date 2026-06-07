@@ -1,0 +1,54 @@
+name: Package & Release
+
+# Finalize a version by pushing a tag like v1.1 (or run this manually).
+# It packages the Mac and Windows folders and attaches them to the Release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to release (e.g. v1.1)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: t
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package macOS  (MAC/release/ -> Manifest-macOS.zip)
+        run: |
+          rm -rf stage && mkdir -p stage/Manifest
+          cp -R MAC/release/. stage/Manifest/
+          (cd stage && zip -r -X ../Manifest-macOS.zip Manifest -x "*.DS_Store" "*__pycache__*")
+
+      - name: Package Windows  (WINDOWS/ -> Manifest-Windows.zip)
+        run: |
+          rm -rf stage && mkdir -p stage/Manifest
+          cp -R WINDOWS/. stage/Manifest/
+          (cd stage && zip -r -X ../Manifest-Windows.zip Manifest -x "*.DS_Store" "*__pycache__*")
+
+      - name: Create or update the Release with both assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.t.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" Manifest-macOS.zip Manifest-Windows.zip --clobber
+          else
+            gh release create "$TAG" Manifest-macOS.zip Manifest-Windows.zip \
+              --title "Manifest $TAG" --generate-notes --latest
+          fi

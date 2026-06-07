@@ -1,8 +1,8 @@
 # Manifest
 
-A personal, self-hosted video downloader for macOS. Paste a link from YouTube,
-TikTok, Instagram, X, Reddit, Vimeo and ~1,800 other sites → pick a quality →
-it downloads to your computer. Runs entirely on your Mac — **no website, no
+A personal, self-hosted video downloader. Paste a link from YouTube, TikTok,
+Instagram, X, Reddit, Vimeo and ~1,800 other sites → pick a quality → it
+downloads to your computer. Runs entirely on your machine — **no website, no
 account, no cost, no cloud lag.**
 
 > For personal use. Respect each site's Terms of Service and copyright — only
@@ -10,23 +10,30 @@ account, no cost, no cloud lag.**
 
 ---
 
+## Repository layout
+
+| Folder | What it is |
+|--------|-----------|
+| **`DESIGN/`** | Shared source of truth — the UI (`templates/index.html`) and the cross-platform backend (`app.py`, `requirements.txt`). |
+| **`MAC/`** | macOS wrapper: `Install Manifest.command`, `Manifest.command`, `app/setup.sh` (Homebrew + uv). ✅ released. |
+| **`WINDOWS/`** | Windows wrapper: `Install Manifest.bat`, `Manifest.bat`, `app/setup.ps1` (winget + uv). 🚧 draft, untested. |
+| `CLAUDE.md` | The "master brain": roles, workflow rules, and custom commands. |
+
+Shared code is edited in `DESIGN/` and synced into the platform folders (see the
+**Design Changes** workflow in `CLAUDE.md`).
+
 ## Install (non-technical, double-click)
 
-1. **Download:** go to **https://github.com/Slasher1v/Manifest** → green
-   **Code** button → **Download ZIP** → unzip it.
-   (Or clone: `git clone https://github.com/Slasher1v/Manifest.git`)
-2. Double-click **`Install Manifest.command`**.
-   - If macOS says *"unidentified developer"*, **right-click → Open** the first time.
-   - It installs everything automatically (a few minutes, needs internet).
-3. Double-click **`Manifest.command`** to start it. Your browser opens to the app.
+Download the repo (**Code → Download ZIP**, or `git clone`), then:
 
-That's it. See **`READ ME FIRST.txt`** for the friendly step-by-step.
+- **macOS:** open the **`MAC`** folder → double-click **`Install Manifest.command`**
+  (right-click → Open the first time) → then **`Manifest.command`**.
+- **Windows:** open the **`WINDOWS`** folder → double-click **`Install Manifest.bat`**
+  → then **`Manifest.bat`**. *(Draft — not yet tested on real Windows.)*
 
-### Updating later
-
-If you cloned it: `git pull` then run **`Manifest.command`** again.
-If you downloaded the ZIP: download it again and replace the folder. (The app
-also auto-updates yt-dlp on each launch, so it keeps working as sites change.)
+Each platform's **`READ ME FIRST.txt`** has the friendly step-by-step. The
+installer is self-contained and idempotent; the launcher self-repairs and
+auto-updates yt-dlp.
 
 ## What gets installed
 
@@ -57,14 +64,18 @@ for the session. All local; nothing is uploaded.
 
 ## For developers
 
+Edit shared code in **`DESIGN/`**, then sync to the platform folders (the
+**Design Changes** workflow in `CLAUDE.md`). Make feature changes on a branch,
+not `main`.
+
 ```bash
-# from the app/ folder
-./venv/bin/python app.py    # after setup.sh has run once
+# run the Mac build directly, after MAC/app/setup.sh has run once
+cd MAC/app && ./venv/bin/python app.py
 ```
 
-- `app/app.py` — Flask backend + yt-dlp glue
-- `app/templates/index.html` — single-page UI
-- `app/setup.sh` — idempotent environment setup (sourced by the launchers)
+- `DESIGN/app.py` — Flask backend + yt-dlp glue (cross-platform)
+- `DESIGN/templates/index.html` — single-page UI
+- `MAC/app/setup.sh` / `WINDOWS/app/setup.ps1` — per-platform environment setup
 - Env vars: `MANIFEST_BROWSER` (cookie source, default `chrome`),
   `MANIFEST_DENO` (deno path), `MANIFEST_PROXY` (optional proxy)
 
