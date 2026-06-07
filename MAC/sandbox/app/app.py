@@ -34,8 +34,18 @@ DOWNLOAD_DIR.mkdir(exist_ok=True)
 # Override with the env var:
 #   MANIFEST_BROWSER=safari ./run.sh      (or chrome / firefox / brave / edge)
 #   MANIFEST_BROWSER=none   ./run.sh      to disable cookies entirely
+#
+# Windows note: Chrome 127+ uses "AppBound" cookie encryption that blocks all
+# external cookie readers (yt-dlp, password managers, etc) — see yt-dlp #10927
+# / #15401. On Windows the launcher auto-prefers Firefox when it's installed.
+# Fallback: export Chrome cookies via a "Get cookies.txt" extension and set
+#   MANIFEST_COOKIES_FILE=C:\path\to\cookies.txt
+# That bypasses browser-cookie extraction entirely and works with any browser.
 _b = os.environ.get("MANIFEST_BROWSER", "chrome").strip().lower()
 COOKIES_FROM_BROWSER = None if _b in ("", "none", "off", "false", "disable") else _b
+
+_cf = os.environ.get("MANIFEST_COOKIES_FILE", "").strip()
+COOKIES_FILE = _cf if _cf and os.path.isfile(_cf) else None
 
 # Optional proxy for all yt-dlp traffic. Use this when your ISP/region blocks the
 # YouTube media CDN (symptom: format list loads fine, but downloads 403). Accepts
@@ -48,9 +58,17 @@ PROXY = os.environ.get("MANIFEST_PROXY", "").strip() or None
 # offloads this to an external runtime — Deno is the supported default. Without
 # it YouTube returns only images / "Requested format is not available". We locate
 # Deno and hand yt-dlp its explicit path so it works regardless of launch PATH.
+if os.name == "nt":
+    _deno_candidates = [
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "deno", "deno.exe"),
+        os.path.join(os.environ.get("USERPROFILE", ""), ".deno", "bin", "deno.exe"),
+        r"C:\Program Files\deno\deno.exe",
+    ]
+else:
+    _deno_candidates = ["/opt/homebrew/bin/deno", "/usr/local/bin/deno"]
 _deno = (
     shutil.which("deno")
-    or next((p for p in ("/opt/homebrew/bin/deno", "/usr/local/bin/deno") if os.path.exists(p)), None)
+    or next((p for p in _deno_candidates if p and os.path.exists(p)), None)
 )
 DENO_PATH = os.environ.get("MANIFEST_DENO", _deno) or None
 
@@ -82,7 +100,11 @@ def _base_ydl_opts():
         "no_warnings": True,
         "noplaylist": True,  # one video at a time keeps the UX predictable
     }
-    if COOKIES_FROM_BROWSER:
+    if COOKIES_FILE:
+        # Explicit file beats browser extraction; needed on Windows with Chrome 127+
+        # where the encrypted cookie store can't be read by external programs.
+        opts["cookiefile"] = COOKIES_FILE
+    elif COOKIES_FROM_BROWSER:
         # (browser, profile, keyring, container) — only the browser is required.
         opts["cookiesfrombrowser"] = (COOKIES_FROM_BROWSER,)
     if PROXY:
