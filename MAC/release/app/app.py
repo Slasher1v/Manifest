@@ -342,5 +342,8 @@ def file(job_id):
 
 
 if __name__ == "__main__":
-    print("\n  Manifest running →  http://127.0.0.1:8000\n")
-    app.run(host="127.0.0.1", port=8000, debug=False, threaded=True)
+    # Port is configurable so the sandbox build can run alongside the release
+    # build (e.g. release on 8000, sandbox on 8001).
+    port = int(os.environ.get("MANIFEST_PORT", "8000"))
+    print(f"\n  Manifest running →  http://127.0.0.1:{port}\n")
+    app.run(host="127.0.0.1", port=port, debug=False, threaded=True)

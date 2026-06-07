@@ -1,0 +1,10 @@
+🧪 MANIFEST — MAC SANDBOX (internal test build)
+
+This is the private testing copy of the Mac app. Break things here freely.
+- Runs on port 8001 (the release runs on 8000), so both can run at once.
+- It does NOT auto-update and is NEVER packaged into public releases.
+
+The official, user-facing app is in:  MAC/release/
+
+Promotion: when a change here is good and the user approves a release, the
+tested files are copied from MAC/sandbox → MAC/release, then published.

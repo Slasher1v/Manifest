@@ -1,0 +1,83 @@
+==========================================================
+                  M A N I F E S T
+       A video downloader that runs on your own Mac
+==========================================================
+
+Paste a link from YouTube, TikTok, Instagram, X, Reddit and
+more -> pick a quality -> it downloads to your computer.
+No website, no account, no cost.
+
+
+----------------------------------------------------------
+WHAT YOU NEED
+----------------------------------------------------------
+- A Mac (Apple Silicon or Intel).
+- An internet connection.
+- About 10 minutes and ~500 MB of space for the first setup.
+- Google Chrome, and be SIGNED IN to YouTube in Chrome
+  (Manifest borrows your login so YouTube works).
+
+
+----------------------------------------------------------
+STEP 1 — INSTALL (do this once)
+----------------------------------------------------------
+1. Double-click:   Install Manifest.command
+
+   >>> If macOS says "unidentified developer" or won't open it:
+       RIGHT-click the file -> choose "Open" -> click "Open".
+       (You only have to do this the first time.)
+
+2. A black window opens and installs everything.
+   - If it asks for your Mac password, type it and press Return.
+     (You won't see the characters as you type — that's normal.)
+   - Wait until it says:  "Done! Manifest is installed."
+
+3. Close that window.
+
+
+----------------------------------------------------------
+STEP 2 — USE IT (every time)
+----------------------------------------------------------
+1. Double-click:   Manifest.command
+   (Again: if it won't open, RIGHT-click -> Open the first time.)
+
+2. Your web browser opens automatically at:
+      http://127.0.0.1:8000
+
+3. Paste a video link, click "Fetch", pick a quality.
+   The file is saved and offered as a download.
+
+4. TO STOP: just close the black window.
+
+
+----------------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------------
+- YouTube says nothing downloads / only low quality?
+    -> Make sure you're LOGGED IN to YouTube in Chrome,
+       then try again.
+
+- An error about a missing module (e.g. "No module named flask")?
+    -> Just double-click "Manifest.command" again. It repairs the
+       setup automatically. If it still fails, run
+       "Install Manifest.command" and watch for any red error text.
+
+- "Manifest isn't installed yet" message?
+    -> Run "Install Manifest.command" first.
+
+- A download is slow?
+    -> Usually just your internet speed, or a big HD file.
+       Try a lower quality.
+
+- Want to move the folder?
+    -> You can put this whole "Manifest" folder anywhere
+       (e.g. Applications or Desktop). Keep all the files
+       together inside it.
+
+
+----------------------------------------------------------
+NOTE
+----------------------------------------------------------
+For personal use. Please respect each site's Terms of
+Service and copyright. Only download what you're allowed to.
+==========================================================

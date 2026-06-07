@@ -29,10 +29,10 @@ jobs:
             echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Package macOS  (MAC/ -> Manifest-macOS.zip)
+      - name: Package macOS  (MAC/release/ -> Manifest-macOS.zip)
         run: |
           rm -rf stage && mkdir -p stage/Manifest
-          cp -R MAC/. stage/Manifest/
+          cp -R MAC/release/. stage/Manifest/
           (cd stage && zip -r -X ../Manifest-macOS.zip Manifest -x "*.DS_Store" "*__pycache__*")
 
       - name: Package Windows  (WINDOWS/ -> Manifest-Windows.zip)
