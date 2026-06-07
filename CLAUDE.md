@@ -38,7 +38,11 @@ Operate as one of three specialist roles by which folder you touch:
 
 ### Mac: release vs sandbox
 * **`Mac/`** = the official, user-facing app (port **8000**). Its launcher
-  auto-updates (git pull on `main` for clones + a "new version" notice for ZIP users).
+  **auto-updates** on every run: `git pull` for git clones, and a real
+  **self-update** for ZIP installs (pulls the latest `.engine` code from `main`
+  and applies it in place, keeping venv/token-helper/downloads). So pushing to
+  `main` reaches all users automatically — no re-download. (`MANIFEST_NO_UPDATE=1`
+  disables it; tracked via `.engine/.commit`, stamped at build by the release Action.)
   Packaged into GitHub Releases.
 * **`dev/sandbox/`** = private test build (port **8001**, via `MANIFEST_PORT`), never
   packaged, no auto-update. Do Mac testing here.

@@ -11,6 +11,9 @@ Write-Host "======================================================"
 
 . (Join-Path $PSScriptRoot 'setup.ps1')
 
+# Keep Manifest up to date: pull the latest code from main and apply it in place.
+Update-ManifestCode
+
 # Chrome 127+ uses AppBound cookie encryption on Windows, so yt-dlp can't read
 # Chrome cookies (yt-dlp #10927 / #15401). Firefox stores cookies in plain SQLite
 # and works fine. If the user hasn't pinned MANIFEST_BROWSER, and Firefox is

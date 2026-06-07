@@ -50,6 +50,48 @@ function Test-ManifestReady {
     return $true
 }
 
+# ------------------------------------------------------------------ self-update
+# Pull the latest app code from the repo's `main` and apply it in place, keeping
+# the user's venv / token helper / downloads. This is how code & UI changes you
+# push reach every user automatically. Set MANIFEST_NO_UPDATE=1 to disable.
+$ManifestRepo = 'Slasher1v/Manifest'
+$ManifestPlatform = 'Windows'
+
+function Update-ManifestCode {
+    if ($env:MANIFEST_NO_UPDATE) { return }
+    $commitFile = Join-Path $ManifestAppDir '.commit'
+    $localSha = if (Test-Path $commitFile) { (Get-Content $commitFile -Raw).Trim() } else { '' }
+    try {
+        $latest = (Invoke-RestMethod -UseBasicParsing -TimeoutSec 5 `
+            "https://api.github.com/repos/$ManifestRepo/commits/main").sha
+    } catch { return }
+    if (-not $latest -or $latest -eq $localSha) { return }
+
+    Write-Host "==> Updating Manifest to the latest version..."
+    $tmp = Join-Path $env:TEMP ("manifest-up-" + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $tmp -Force | Out-Null
+    try {
+        $zip = Join-Path $tmp 'm.zip'
+        Invoke-WebRequest -UseBasicParsing -TimeoutSec 90 `
+            -Uri "https://github.com/$ManifestRepo/archive/$latest.zip" -OutFile $zip
+        Expand-Archive -Path $zip -DestinationPath $tmp -Force
+        $src = Join-Path $tmp "Manifest-$latest\$ManifestPlatform\.engine"
+        if ((Test-Path $src) -and (Test-Path (Join-Path $src 'app.py'))) {
+            foreach ($f in @('app.py','requirements.txt','setup.ps1','install.ps1','launch.ps1')) {
+                $s = Join-Path $src $f
+                if (Test-Path $s) { Copy-Item -Force $s (Join-Path $ManifestAppDir $f) }
+            }
+            $tpl = Join-Path $ManifestAppDir 'templates'
+            New-Item -ItemType Directory -Path $tpl -Force | Out-Null
+            Copy-Item -Force (Join-Path $src 'templates\*') $tpl
+            Set-Content -Path $commitFile -Value $latest -NoNewline
+            $py = Get-VenvPython
+            if (Test-Path $py) { uv pip install --python $py -r (Join-Path $ManifestAppDir 'requirements.txt') *> $null }
+            Write-Host "   updated."
+        }
+    } catch { } finally { Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue }
+}
+
 # ------------------------------------------------------------------ steps
 
 function Test-Winget {
