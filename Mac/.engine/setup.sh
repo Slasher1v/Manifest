@@ -72,8 +72,16 @@ _ensure_brew() {
 }
 
 _ensure_tools() {
-  echo "==> Ensuring tools (uv, deno, node, ffmpeg)..."
-  brew install uv deno node ffmpeg
+  # Only install what's actually missing — never force-upgrade already-working
+  # tools (that's slow and a single transient download error would abort setup).
+  local need=()
+  for t in uv deno node ffmpeg; do
+    command -v "$t" >/dev/null 2>&1 || need+=("$t")
+  done
+  if [ ${#need[@]} -gt 0 ]; then
+    echo "==> Installing tools: ${need[*]}..."
+    brew install "${need[@]}"
+  fi
 }
 
 _ensure_uv() {

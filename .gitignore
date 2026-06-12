@@ -12,3 +12,6 @@ Thumbs.db
 # Misc
 *.zip
 *.log
+
+# built .app output
+dev/mac-app/build/
