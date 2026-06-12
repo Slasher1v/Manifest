@@ -47,10 +47,17 @@ OSA
   exit 0
 fi
 
-# Ready -> run quietly as a Dock app (Cmd-Q to stop).
+# Ready -> run as a real app (own window, Cmd-Q to stop).
 # shellcheck disable=SC1091
 source ./setup.sh 2>/dev/null
 type manifest_self_update >/dev/null 2>&1 && manifest_self_update
+
+# Keep the desktop-window entry in sync with the bundle (it's bundle-provided,
+# not self-updated), and make sure pywebview is available for the native window.
+[ -n "$RES" ] && [ -f "$RES/window.py" ] && cp -f "$RES/window.py" ./window.py
+if ! ./venv/bin/python -c "import webview" >/dev/null 2>&1; then
+  uv pip install --python venv/bin/python pywebview >/dev/null 2>&1 || true
+fi
 
 if ! curl -s -o /dev/null --max-time 2 "http://127.0.0.1:4416/ping"; then
   node pot-provider/server/build/main.js >/tmp/manifest-pot.log 2>&1 &
@@ -59,5 +66,9 @@ fi
 _cleanup() { [ -n "$POT_PID" ] && kill "$POT_PID" 2>/dev/null; }
 trap _cleanup EXIT INT TERM
 
-( sleep 2; open "http://127.0.0.1:8000" ) &
-exec ./venv/bin/python app.py
+if [ -f window.py ] && ./venv/bin/python -c "import webview" >/dev/null 2>&1; then
+  exec ./venv/bin/python window.py        # native Manifest window
+else
+  ( sleep 2; open "http://127.0.0.1:8000" ) &   # fallback: browser
+  exec ./venv/bin/python app.py
+fi
