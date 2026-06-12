@@ -41,7 +41,7 @@ if ! _ready; then
   /usr/bin/osascript <<OSA
 tell application "Terminal"
   activate
-  do script "clear; echo 'Setting up Manifest (one-time, a few minutes)...'; echo; cd '$ENGINE'; source ./setup.sh; if manifest_setup; then echo; echo 'Done. Launching Manifest...'; open '$APP_BUNDLE'; echo 'You can close this window.'; else echo; echo 'Setup did not finish - scroll up for the error, then try again.'; fi"
+  do script "clear; echo 'Setting up Manifest (one-time, a few minutes)...'; echo; cd '$ENGINE'; source ./setup.sh; if manifest_setup; then uv pip install --python venv/bin/python pywebview >/dev/null 2>&1; echo; echo 'Done. Launching Manifest...'; open '$APP_BUNDLE'; echo 'You can close this window.'; else echo; echo 'Setup did not finish - scroll up for the error, then try again.'; fi"
 end tell
 OSA
   exit 0

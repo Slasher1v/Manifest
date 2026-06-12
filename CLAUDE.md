@@ -62,14 +62,19 @@ cross-platform (locates `deno`/`ffmpeg` via `PATH`); only the wrappers differ.
 
 ## Custom Commands
 
-### 1. Publish Mac Release / 2. Publish Windows Release
-Releases are automated (both platforms packaged together):
-1. Merge the feature branch into `main` and push.
-2. `git tag vX.Y && git push origin vX.Y`.
-3. The **Package & Release** Action (`.github/workflows/release.yml`) packages
-   `Mac/` → `Manifest-macOS.zip` and `Windows/` → `Manifest-Windows.zip` and
-   attaches both to the Release. (Also runnable manually via *workflow_dispatch*.)
-> First promote `dev/sandbox` → `Mac/` (with the user's approval) so released code is tested code.
+### Publish / Deploy  (NO version bumps — we rely on auto-update)
+Updates reach users via the **self-updater** (commit-SHA based, pulls `main`), so
+we do **not** create new version numbers. There is **one** perpetual release,
+**`v1.1`**, that only exists to host the download zips for brand-new users.
+
+To publish a change:
+1. Promote `dev/sandbox` → `Mac/` (with the user's approval) so released code is tested.
+2. Merge the feature branch into `main` and `git push` → existing users auto-update on next launch.
+3. (Optional, for new downloaders) Refresh the v1.1 download assets by re-pointing
+   the tag: `git tag -f v1.1 && git push -f origin v1.1` → the **Package & Release**
+   Action rebuilds `Manifest-macOS.zip` / `Manifest-Windows.zip` and clobbers v1.1's assets.
+
+Do **not** introduce `v1.2`, `v2.0`, etc. unless the user explicitly asks to start versioning again.
 
 ### 3. Design Changes
 1. Take updated files from `dev/DESIGN` (`app.py`, `requirements.txt`, `templates/`).
